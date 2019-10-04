@@ -9,9 +9,7 @@ from threading import Thread
 from google_drive_downloader import GoogleDriveDownloader as gdd
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
-import re
-import os
-import time
+
 
 txtHeading = ''
 txtMsg = ''
@@ -87,40 +85,51 @@ def publish():
     
 root=Tk()
 root.title("Project")
-root.geometry("1350x700+0+0")
+root.geometry("1350x600+0+50")
+newFile =''
+
+def AddImage():
+    global root, newFile, entImg
+    root.fileName = filedialog.askopenfilename(filetypes = ( [("All files","*.*")]))
+    newFile = root.fileName
+    entImg.insert(END, newFile)
+    
 Tops = tk.Frame (root , width=1350 , height=100 , bd=12 , relief="raise" , bg='black')
-Tops.grid(row=0,column=0, columnspan=2)
+Tops.grid(row=0,column=0, columnspan=3)
 lbTitle=Label(Tops , font=('Times New Roman' , 40 , 'bold') ,width=42, text='Notice Board - Fr. CRCE', bg='black' , fg='gold')
 lbTitle.grid(row=0,column=0)
+
+
 lblHeading = Label(root, text='Heading: ', width=10, font=('',25,''))
 lblHeading.grid(row=1,column=0, padx=10, pady=10)
-entHeading = Text(root, width=110, height=4)
-entHeading.grid(row=1,column=1, padx=10, pady=10)
+entHeading = Text(root, width=55, height=1, font=('',20,''))
+entHeading.grid(row=1,column=1, padx=10, pady=10, columnspan=2)
 lblMsg = Label(root, text='Message: ', width=10, font=('',25,''))
 lblMsg.grid(row=2,column=0 ,padx=10, pady=10)
-entMsg = Text(root , width=110, height=10)
-entMsg.grid(row=2,column=1, padx=10, pady=10)
-
-root.fileName = filedialog.askopenfilename(filetypes = ( [("All files","*.*")]))
-newFile = root.fileName
+entMsg = Text(root , width=75, height=5, font=('',15,''))
+entMsg.grid(row=2,column=1, padx=10, pady=10, columnspan=2)
 
 lblImg = Label(root, text='Image: ', width=10, font=('',25,''))
 lblImg.grid(row=3,column=0, padx=10, pady=10)
-entImg = Text(root , width=110, height=3)
+entImg = Text(root , width=50, height=1, font=('',15,''))
 entImg.grid(row=3,column=1, padx=10, pady=10)
+btnImg = Button(root, text='Add Image', command=AddImage, font=(15), bg='black', fg='white')
+btnImg.grid(row=3, column=2)
+
+
 lblPub = Label(root, text='Publisher: ', width=10, font=('',25,''))
 lblPub.grid(row=4,column=0, padx=10, pady=10)
-entPublisher = Text(root , width=110, height=3)
-entPublisher.grid(row=4,column=1, padx=10, pady=10)
+entPublisher = Text(root , width=75, height=1, font=('',15,''))
+entPublisher.grid(row=4,column=1, padx=10, pady=10, columnspan=2)
 lblAdd = Label(root, text='Addressee: ', width=10, font=('',25,''))
 lblAdd.grid(row=5,column=0, padx=10, pady=10)
-entAddressee = Text(root , width=110, height=3)
-entAddressee.grid(row=5,column=1, padx=10, pady=10)
+entAddressee = Text(root , width=75, height=1, font=('',15,''))
+entAddressee.grid(row=5,column=1, padx=10, pady=10, columnspan=2)
 
-btnPublish = Button(root, width=10,text='PUBLISH',font=(30), command=publish)
-btnPublish.grid(row=6, column=0, columnspan=2)
+btnPublish = Button(root, width=10,text='PUBLISH',font=(30), command=publish, bg='green', fg='white')
+btnPublish.grid(row=6, column=0, columnspan=3)
 
 btnStart = Button(root, width=1,height=1, command=Thread(target=start_nb).start())
-btnStart.grid(row=4,column=2)
+btnStart.grid(row=6,column=10)
 
 root.mainloop()

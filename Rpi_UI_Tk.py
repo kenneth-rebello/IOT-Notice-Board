@@ -5,6 +5,7 @@ from PIL import ImageTk, Image
 import paho.mqtt.client as mqtt
 from threading import Thread
 from google_drive_downloader import GoogleDriveDownloader as gdd
+from multiprocessing import Process
 import re
 import os
 import time
@@ -19,6 +20,12 @@ class Notice:
         self.Addressee = a
         self.contestImg = i
         
+def destroy_notice(notice):
+    global allNotices
+    print('setToDestroy')
+    time.sleep(15)
+    allNotices.remove(notice)
+
     
 def newNotice(contestImg, Heading, Msg, Publisher, Addressee):
     global allNotices
@@ -28,16 +35,32 @@ def newNotice(contestImg, Heading, Msg, Publisher, Addressee):
     print(notice.Heading)
     allNotices.append(notice)
     print(allNotices)
+    destroy_notice(notice)
+    
+def reset_nb():
+    global BottomMain
+    print('reseting NB')
+    lblHeading = Label(BottomMain,font=('Arial Black',30,'bold'), text="No notice to show yet",padx=20, width=45, height=2)
+    lblHeading.grid(row=0,column=0)
+    lblMsg = Label(BottomMain ,font=('',25,'bold'),bg='white', padx=5, width=65, height=11, justify='center', wraplength=1300, text="")
+    lblMsg.grid(row=1,column=0)
+    Footer = tk.Frame(BottomMain, width=1350, height=100)
+    Footer.grid(row=2,column=0)
+    lblPublisher = Label(Footer,font=(15), bg="white", text="Published By:", width=50)
+    lblPublisher.grid(row=0,column=0)
+    lblAddressee = Label(Footer,font=(15), bg="white", text="To:", width=50)
+    lblAddressee.grid(row=0,column=1)
     
 def carousel():
     global allNotices
-    
+    print('carousel start')
     while 1:
         if(len(allNotices)>0):
-            
             for i in range(len(allNotices)):
                 _update(allNotices[i]) 
                 time.sleep(5)
+        else:
+            reset_nb()
             
             
 def _update(notice):
@@ -49,10 +72,10 @@ def _update(notice):
     if(notice.Heading != ""):
         lblHeading = Label(BottomMain,font=('Arial Black',30,'bold'), text=notice.Heading ,padx=20, width=45, height=2)
         lblHeading.grid(row=0,column=0)
-    if(notice.contestImg!=""):
+    if(notice.contestImg!="" and notice.Msg !=""):
         Body = tk.Frame(BottomMain, width=1350, bg="white")
         Body.grid(row=1, column=0)
-        lblMsg = Label(Body,font=('',25,'bold'),bg='white', padx=5, width=30, height=11, justify='center', wraplength=1300, text="")
+        lblMsg = Label(Body,font=('',25,'bold'),bg='white', padx=5, width=30, height=11, justify='center', wraplength=1300, text=notice.Msg)
         lblMsg.grid(row=0,column=0)
         img1 = Image.open("C:/Users/Kenneth Rebello/Desktop/" +notice.contestImg+".png")
         img2 = img1.resize((720, 360),Image.ANTIALIAS)
@@ -60,7 +83,7 @@ def _update(notice):
         lblImg = Label(Body, image=img, width=720, height=360, bg="white")
         lblImg.image=img
         lblImg.grid(row=0,column=1)
-    elif(notice.Msg != "" and notice.contestImg==""):
+    elif(notice.Msg != "" ):
         lblMsg = Label(BottomMain,font=('',25,'bold'),bg='white', padx=5, width=65, height=11, justify='center', wraplength=1300, text=notice.Msg)
         lblMsg.grid(row=1,column=0)
         
@@ -146,7 +169,6 @@ lbTitle=Label(Tops , font=('Times New Roman' , 40 , 'bold') ,width=42, text='Not
 lbTitle.grid(row=0,column=0)
 BottomMain = tk.Frame(root , width=1350 , height=650 , bd=12, padx=10 , bg='white')    
 BottomMain.grid(row=1,column=0)
-
 lblHeading = Label(BottomMain,font=('Arial Black',30,'bold'), text="No notice to show yet",padx=20, width=45, height=2)
 lblHeading.grid(row=0,column=0)
 lblMsg = Label(BottomMain ,font=('',25,'bold'),bg='white', padx=5, width=65, height=11, justify='center', wraplength=1300, text="")
@@ -159,8 +181,6 @@ lblAddressee = Label(Footer,font=(15), bg="white", text="To:", width=50)
 lblAddressee.grid(row=0,column=1)
 
 btnStart = Button(root, width=1,height=1, command=Thread(target=start_nb).start())
-btnStart.grid(row=4,column=2)
-btnStart2 = Button(root, width=1,height=1, command=Thread(target=carousel).start())
-btnStart2.grid(row=4,column=1)
+btnStart.grid(row=4,column=20)
 
 root.mainloop()
