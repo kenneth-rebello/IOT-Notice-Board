@@ -6,8 +6,8 @@ import paho.mqtt.client as mqtt
 from threading import Thread
 from google_drive_downloader import GoogleDriveDownloader as gdd
 from multiprocessing import Process
+from datetime import date
 import re
-import os
 import time
 
 allNotices = []
@@ -19,12 +19,15 @@ class Notice:
         self.Publisher = p
         self.Addressee = a
         self.contestImg = i
+        self.publishDate = date.today()
         
 def destroy_notice(notice):
     global allNotices
     print('setToDestroy')
     time.sleep(15)
     allNotices.remove(notice)
+    if(len(allNotices)<=0):
+        reset_nb()
 
     
 def newNotice(contestImg, Heading, Msg, Publisher, Addressee):
@@ -59,8 +62,6 @@ def carousel():
             for i in range(len(allNotices)):
                 _update(allNotices[i]) 
                 time.sleep(5)
-        else:
-            reset_nb()
             
             
 def _update(notice):
@@ -91,11 +92,14 @@ def _update(notice):
     Footer.grid(row=2,column=0)
 
     if(notice.Publisher != ""):
-        lblPublisher = Label(Footer,font=(15), bg="white", text="Published By: "+notice.Publisher , width=50)
+        lblPublisher = Label(Footer,font=(15), bg="white", text="Published By: "+notice.Publisher , width=33)
         lblPublisher.grid(row=0,column=0)
     if(notice.Addressee!=""):
-        lblAddressee = Label(Footer,font=(15), bg="white", text="To: "+notice.Addressee , width=50)
+        lblAddressee = Label(Footer,font=(15), bg="white", text="To: "+notice.Addressee , width=33)
         lblAddressee.grid(row=0,column=1)
+        
+    lblDate = Label(Footer, font=(15),bg='white', text=notice.publishDate, width=33)
+    lblDate.grid(row=0, column=2)
         
 
 # Define event callbacks
@@ -182,5 +186,7 @@ lblAddressee.grid(row=0,column=1)
 
 btnStart = Button(root, width=1,height=1, command=Thread(target=start_nb).start())
 btnStart.grid(row=4,column=20)
+btnStart2 = Button(root, width=1,height=1, command=Thread(target=carousel).start())
+btnStart2.grid(row=4,column=21)
 
 root.mainloop()
