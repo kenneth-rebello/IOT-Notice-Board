@@ -24,7 +24,7 @@ class Notice:
 def destroy_notice(notice):
     global allNotices
     print('setToDestroy')
-    time.sleep(15)
+    time.sleep(90)
     allNotices.remove(notice)
     if(len(allNotices)<=0):
         reset_nb()

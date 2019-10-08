@@ -48,7 +48,6 @@ def on_publish(client, obj, mid):
 def publish():
     global mqttc,entMsg, entHeading, entImg, entPublisher, entAddressee, txtMsg, txtHeading, txtImg, txtPublisher, txtAddressee
     topic = 'notice'
-    print('publishhing')
     txtHeading = entHeading.get('1.0','end-1c')
     txtMsg = entMsg.get('1.0','end-1c')
     txtImg = entImg.get('1.0','end-1c')
@@ -57,19 +56,21 @@ def publish():
     txtAddressee = entAddressee.get('1.0','end-1c')
     Publisher = txtPublisher
     Addressee = txtAddressee
-    gauth = GoogleAuth()
-    gauth.LocalWebserverAuth()
-    drive = GoogleDrive(gauth)
-    path = ''
-    path=txtImg.replace('\\','/')
-    if(path != ''):
-        file1 = drive.CreateFile()
-        file1.SetContentFile(path)
-        file1.Upload()
-        permission = file1.InsertPermission({
-                                'type': 'anyone',
-                                'value': 'anyone',
-                                'role': 'reader'})
+    if(txtImg != ''):
+        gauth = GoogleAuth()
+        gauth.LocalWebserverAuth()
+        gauth.SaveCredentialsFile('my_cred.txt')
+        drive = GoogleDrive(gauth)
+        path = ''
+        path=txtImg.replace('\\','/')
+        if(path != ''):
+            file1 = drive.CreateFile()
+            file1.SetContentFile(path)
+            file1.Upload()
+            permission = file1.InsertPermission({
+                                    'type': 'anyone',
+                                    'value': 'anyone',
+                                    'role': 'reader'})
         
         txtImg = (file1['alternateLink'])
         temp = txtImg.partition('file/d/');
