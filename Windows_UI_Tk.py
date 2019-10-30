@@ -9,6 +9,9 @@ from threading import Thread
 from google_drive_downloader import GoogleDriveDownloader as gdd
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
+import smtplib
+import imghdr
+from email.message import EmailMessage
 
 
 txtHeading = ''
@@ -17,6 +20,25 @@ txtImg = ''
 txtPublisher =''
 txtAddressee = ''
 mqttc = mqtt.Client()
+
+
+def send_mail():
+    msg=EmailMessage()
+    s=txtHeading
+    msg['Subject']=s
+    msg['From']='banquecosmopolite@gmail.com'
+    msg['To']='prasadnitesh202@gmail.com'
+    body="Notice published: "+txtMsg+'\n'
+    msg.set_content(body)
+    with open(txtImg,'rb') as f:
+        file_data=f.read()
+        file_type=imghdr.what(f.name)
+        file_name='notice'
+        print(file_type)
+    msg.add_attachment(file_data,maintype='image',subtype=file_type,filename=file_name)
+    with smtplib.SMTP_SSL('smtp.gmail.com',465) as smtp:
+        smtp.login('banquecosmopolite@gmail.com','chhaganlal123*')
+        smtp.send_message(msg)
 
 
 def start_nb():
@@ -44,6 +66,9 @@ def on_connect(client, userdata, flags, rc):
 
 def on_publish(client, obj, mid):
     print("mid: " + str(mid))
+    send_mail()
+    print('sent mail')
+
     
 def publish():
     global mqttc,entMsg, entHeading, entImg, entPublisher, entAddressee, txtMsg, txtHeading, txtImg, txtPublisher, txtAddressee
