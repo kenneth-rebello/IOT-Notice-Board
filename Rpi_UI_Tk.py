@@ -20,7 +20,7 @@ class Notice:
         self.Publisher = p
         self.Addressee = a
         self.contestImg = i
-        self.publishDate = datetime.today()
+        self.publishDate = datetime.date.today()
         
 def destroy_notice(notice):
     global allNotices
@@ -79,7 +79,7 @@ def _update(notice):
         Body.grid(row=1, column=0)
         lblMsg = Label(Body,font=('',25,'bold'),bg='white', padx=5, width=30, height=11, justify='center', wraplength=1300, text=notice.Msg)
         lblMsg.grid(row=0,column=0)
-        img1 = Image.open("C:/Users/Kenneth/Desktop/" +notice.contestImg+".png")
+        img1 = Image.open("C:/Users/Nitesh Prasad/Desktop/" +notice.contestImg+".png")
         img2 = img1.resize((720, 360),Image.ANTIALIAS)
         img = ImageTk.PhotoImage(img2)
         lblImg = Label(Body, image=img, width=720, height=360, bg="white")
@@ -124,7 +124,7 @@ def on_message(client, obj, msg):
         temp = result.group(1)
         if(temp):
             print("Temp: "+temp)
-            path = "C:/Users/Kenneth/Desktop/" +temp+".png"
+            path = "C:/Users/Nitesh Prasad/Desktop/" +temp+".png"
             gdd.download_file_from_google_drive(file_id = temp, dest_path= path)
         else:
             print('temp var')

@@ -23,14 +23,20 @@ mqttc = mqtt.Client()
 
 
 def send_mail():
+    print('insider mail function')
     msg=EmailMessage()
     s=txtHeading
+    print(s)
     msg['Subject']=s
     msg['From']='banquecosmopolite@gmail.com'
     msg['To']='prasadnitesh202@gmail.com'
     body="Notice published: "+txtMsg+'\n'
+    print(body)
     msg.set_content(body)
-    with open(txtImg,'rb') as f:
+    print('now adding image')
+    print(img)
+    with open(img,'rb') as f:
+        print(img)
         file_data=f.read()
         file_type=imghdr.what(f.name)
         file_name='notice'
@@ -67,16 +73,18 @@ def on_connect(client, userdata, flags, rc):
 def on_publish(client, obj, mid):
     print("mid: " + str(mid))
     send_mail()
-    print('sent mail')
+
 
     
 def publish():
-    global mqttc,entMsg, entHeading, entImg, entPublisher, entAddressee, txtMsg, txtHeading, txtImg, txtPublisher, txtAddressee
+    global mqttc,entMsg, entHeading, entImg, entPublisher, entAddressee, txtMsg, txtHeading, txtImg,img, txtPublisher, txtAddressee
     topic = 'notice'
     txtHeading = entHeading.get('1.0','end-1c')
     txtMsg = entMsg.get('1.0','end-1c')
     txtImg = entImg.get('1.0','end-1c')
     print(txtImg)
+    img=txtImg
+    
     txtPublisher = entPublisher.get('1.0','end-1c')
     txtAddressee = entAddressee.get('1.0','end-1c')
     Publisher = txtPublisher
