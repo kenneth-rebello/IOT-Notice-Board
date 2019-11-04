@@ -6,9 +6,10 @@ import paho.mqtt.client as mqtt
 from threading import Thread
 from google_drive_downloader import GoogleDriveDownloader as gdd
 from multiprocessing import Process
-from datetime import date
+import datetime
 import re
 import time
+import sqlite3
 
 allNotices = []
 
@@ -19,7 +20,7 @@ class Notice:
         self.Publisher = p
         self.Addressee = a
         self.contestImg = i
-        self.publishDate = date.today()
+        self.publishDate = datetime.today()
         
 def destroy_notice(notice):
     global allNotices
@@ -78,7 +79,7 @@ def _update(notice):
         Body.grid(row=1, column=0)
         lblMsg = Label(Body,font=('',25,'bold'),bg='white', padx=5, width=30, height=11, justify='center', wraplength=1300, text=notice.Msg)
         lblMsg.grid(row=0,column=0)
-        img1 = Image.open("C:/Users/Kenneth Rebello/Desktop/" +notice.contestImg+".png")
+        img1 = Image.open("C:/Users/Kenneth/Desktop/" +notice.contestImg+".png")
         img2 = img1.resize((720, 360),Image.ANTIALIAS)
         img = ImageTk.PhotoImage(img2)
         lblImg = Label(Body, image=img, width=720, height=360, bg="white")
@@ -117,13 +118,16 @@ def on_message(client, obj, msg):
         Addressee = ""
         
         noticeReceived = str(msg.payload)
+        addnoticeDB(noticeReceived)
         result = re.search('%1(.*)%2(.*)%3(.*)%4(.*)%5(.*)%6', noticeReceived)
-
+        print(result)
         temp = result.group(1)
-        path = "C:/Users/Kenneth Rebello/Desktop/" +temp+".png"
-        gdd.download_file_from_google_drive(file_id = temp,
-                                            dest_path= path)
-        
+        if(temp):
+            print("Temp: "+temp)
+            path = "C:/Users/Kenneth/Desktop/" +temp+".png"
+            gdd.download_file_from_google_drive(file_id = temp, dest_path= path)
+        else:
+            print('temp var')
         contestImg = result.group(1)
         Heading = result.group(2)
         Msg = result.group(3)
@@ -162,6 +166,59 @@ def start_nb():
     while rc == 0:
         rc = mqttc.loop()
     print("rc: " + str(rc))
+    
+def addnoticeDB(noticeReceived):
+    try:
+        sqliteConnection = sqlite3.connect('notices.db',
+                                           detect_types=sqlite3.PARSE_DECLTYPES |
+                                           sqlite3.PARSE_COLNAMES)
+        cursor = sqliteConnection.cursor()
+        print("Connected to SQLite")
+        
+        
+        sqlite_create_table_query = '''CREATE TABLE if not exists notices (
+                                       hding TEXT,
+                                       msg TEXT ,
+                                       img TEXT ,
+                                       pub TEXT ,
+                                       addresse TEXT,
+                                       noticeDate timestamp);'''
+
+        cursor = sqliteConnection.cursor()
+        cursor.execute(sqlite_create_table_query)
+        #run above string only once~nathan
+        
+        sqlite_insert_with_param = """INSERT INTO 'notices'
+                          ('hding', 'msg', 'img', 'pub', 'addresse', 'noticeDate') 
+                          VALUES (?, ?, ?,?, ?, ?);"""
+        
+        print("breakpoint C")
+        result = re.search('%1(.*)%2(.*)%3(.*)%4(.*)%5(.*)%6', noticeReceived)
+        print("Notie: "+noticeReceived)
+        data_tuple = (result.group(1), result.group(2), result.group(3), result.group(4), result.group(5),datetime.datetime.now(),)
+        print("breakpoint D")
+        cursor.execute(sqlite_insert_with_param, data_tuple)
+        
+        sqliteConnection.commit()
+        print("Notice added successfully \n")
+        startDate =datetime.datetime(2014, 1, 1) #configure in GUI
+        endDate =datetime.datetime(2020, 1, 1) #configure in GUI
+        sqlite_select_query = """SELECT noticeDate from notices where noticeDate > ? and noticeDate < ?"""
+        cursor.execute(sqlite_select_query,(startDate, endDate,))
+        records = cursor.fetchall()
+        print("breakpoint E")
+        for row in records:
+            print(row)
+
+        cursor.close()
+
+
+    except sqlite3.Error as error:
+        print("Error while working with SQLite", error)
+    finally:
+        if (sqliteConnection):
+            sqliteConnection.close()
+            print("sqlite connection is closed")
 
 
 root=Tk()
