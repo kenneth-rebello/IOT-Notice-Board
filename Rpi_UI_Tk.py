@@ -88,7 +88,7 @@ def _update(notice):
     if(notice.contestImg!="" and notice.Msg !=""):
         Body = tk.Frame(BottomMain, width=1350, bg="white")
         Body.grid(row=1, column=0)
-        lblMsg = Label(Body,font=('',25,'bold'),bg='white', padx=5, width=30, height=11, justify='center', wraplength=1300, text=notice.Msg)
+        lblMsg = Label(Body,font=('',25,'bold'),bg='white', padx=5, width=30, height=11, justify='center', wraplength=645, text=notice.Msg)
         lblMsg.grid(row=0,column=0)
         img1 = Image.open("C:/Users/Kenneth/Desktop/" +notice.contestImg+".png")
         img2 = img1.resize((720, 360),Image.ANTIALIAS)
@@ -97,7 +97,7 @@ def _update(notice):
         lblImg.image=img
         lblImg.grid(row=0,column=1)
     elif(notice.Msg != "" ):
-        lblMsg = Label(BottomMain,font=('',25,'bold'),bg='white', padx=5, width=65, height=11, justify='center', wraplength=1300, text=notice.Msg)
+        lblMsg = Label(BottomMain,font=('',25,'bold'),bg='white', padx=5, width=65, height=11, justify='center', wraplength=1280, text=notice.Msg)
         lblMsg.grid(row=1,column=0)
         
     Footer = tk.Frame(BottomMain, width=1350, height=100)

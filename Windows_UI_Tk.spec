@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['Windows_UI_Tk.py'],
-             pathex=['C:\\Users\\Kenneth Rebello\\Documents\\GitHub\\IOT Notice Board'],
+             pathex=['C:\\Users\\Kenneth\\Documents\\GitHub\\IOT-Notice-Board'],
              binaries=[],
              datas=[],
              hiddenimports=[],
