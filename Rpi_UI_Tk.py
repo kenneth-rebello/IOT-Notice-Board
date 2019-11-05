@@ -21,25 +21,28 @@ class Notice:
         self.Addressee = a
         self.contestImg = i
         self.publishDate = datetime.date.today()
+        self.ttl = 5
         
-def destroy_notice(notice):
+def destroy_notices():
     global allNotices
-    print('setToDestroy')
-    time.sleep(90)
-    allNotices.remove(notice)
-    if(len(allNotices)<=0):
-        reset_nb()
+    for i in range(len(allNotices)):
+        if(allNotices[i].ttl == 0):
+            print("Removing Notice: "+allNotices[i].Heading+" at "+str(i))
+            allNotices.remove(allNotices[i])
+            if(len(allNotices)<=0):
+                reset_nb()
+            break
 
-    
+
 def newNotice(contestImg, Heading, Msg, Publisher, Addressee):
     global allNotices
     
     print('making notice object')
     notice = Notice(contestImg,Heading, Msg, Publisher, Addressee)
-    print(notice.Heading)
+    print(notice.Heading+" : "+str(notice.ttl))
     allNotices.append(notice)
     print(allNotices)
-    destroy_notice(notice)
+
     
 def reset_nb():
     global BottomMain
@@ -59,11 +62,19 @@ def carousel():
     global allNotices
     print('carousel start')
     while 1:
+        destroy_notices()
         if(len(allNotices)>0):
+            print("New cycle")
             for i in range(len(allNotices)):
-                _update(allNotices[i]) 
-                time.sleep(5)
+                print("Notice "+str(i)+" : "+allNotices[i].Heading+" with TTL: "+str(allNotices[i].ttl))
+                if(allNotices[i].ttl != 0):
+                    print("Updating board")
+                    _update(allNotices[i]) 
+                    allNotices[i].ttl = allNotices[i].ttl - 1    
+                    time.sleep(8)
             
+                    
+                                
             
 def _update(notice):
     global BottomMain
@@ -79,7 +90,7 @@ def _update(notice):
         Body.grid(row=1, column=0)
         lblMsg = Label(Body,font=('',25,'bold'),bg='white', padx=5, width=30, height=11, justify='center', wraplength=1300, text=notice.Msg)
         lblMsg.grid(row=0,column=0)
-        img1 = Image.open("C:/Users/Nitesh Prasad/Desktop/" +notice.contestImg+".png")
+        img1 = Image.open("C:/Users/Kenneth/Desktop/" +notice.contestImg+".png")
         img2 = img1.resize((720, 360),Image.ANTIALIAS)
         img = ImageTk.PhotoImage(img2)
         lblImg = Label(Body, image=img, width=720, height=360, bg="white")
@@ -124,7 +135,7 @@ def on_message(client, obj, msg):
         temp = result.group(1)
         if(temp):
             print("Temp: "+temp)
-            path = "C:/Users/Nitesh Prasad/Desktop/" +temp+".png"
+            path = "C:/Users/Kenneth/Desktop/" +temp+".png"
             gdd.download_file_from_google_drive(file_id = temp, dest_path= path)
         else:
             print('temp var')
@@ -162,10 +173,12 @@ def start_nb():
  
     # Start subscribe, with QoS level 0
     mqttc.subscribe(topic, 0)
+    print("Connection to MQTT opened")
     rc = 0
     while rc == 0:
         rc = mqttc.loop()
-    print("rc: " + str(rc))
+    print("rc: " + str(rc)+" Connection to MQTT closed")
+    start_nb()
     
 def addnoticeDB(noticeReceived):
     try:
@@ -192,11 +205,8 @@ def addnoticeDB(noticeReceived):
                           ('hding', 'msg', 'img', 'pub', 'addresse', 'noticeDate') 
                           VALUES (?, ?, ?,?, ?, ?);"""
         
-        print("breakpoint C")
         result = re.search('%1(.*)%2(.*)%3(.*)%4(.*)%5(.*)%6', noticeReceived)
-        print("Notie: "+noticeReceived)
         data_tuple = (result.group(1), result.group(2), result.group(3), result.group(4), result.group(5),datetime.datetime.now(),)
-        print("breakpoint D")
         cursor.execute(sqlite_insert_with_param, data_tuple)
         
         sqliteConnection.commit()
@@ -206,7 +216,6 @@ def addnoticeDB(noticeReceived):
         sqlite_select_query = """SELECT noticeDate from notices where noticeDate > ? and noticeDate < ?"""
         cursor.execute(sqlite_select_query,(startDate, endDate,))
         records = cursor.fetchall()
-        print("breakpoint E")
         for row in records:
             print(row)
 
@@ -214,11 +223,11 @@ def addnoticeDB(noticeReceived):
 
 
     except sqlite3.Error as error:
-        print("Error while working with SQLite", error)
+        print("SQLite Error", error)
     finally:
         if (sqliteConnection):
             sqliteConnection.close()
-            print("sqlite connection is closed")
+            print("SQLite connection is closed")
 
 
 root=Tk()

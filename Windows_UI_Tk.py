@@ -19,29 +19,29 @@ txtMsg = ''
 txtImg = ''
 txtPublisher =''
 txtAddressee = ''
+txtEmail:''
 mqttc = mqtt.Client()
 
 
 def send_mail():
+    global txtEmail, txtMsg, txtImg, img
     print('insider mail function')
     msg=EmailMessage()
     s=txtHeading
     print(s)
     msg['Subject']=s
     msg['From']='banquecosmopolite@gmail.com'
-    msg['To']='prasadnitesh202@gmail.com'
+    msg['To']=txtEmail
     body="Notice published: "+txtMsg+'\n'
     print(body)
     msg.set_content(body)
-    print('now adding image')
-    print(img)
-    with open(img,'rb') as f:
-        print(img)
-        file_data=f.read()
-        file_type=imghdr.what(f.name)
-        file_name='notice'
-        print(file_type)
-    msg.add_attachment(file_data,maintype='image',subtype=file_type,filename=file_name)
+    if(txtImg != ""):
+        print('now adding image')
+        with open(img,'rb') as f:
+            file_data=f.read()
+            file_type=imghdr.what(f.name)
+            file_name='notice'
+        msg.add_attachment(file_data,maintype='image',subtype=file_type,filename=file_name)
     with smtplib.SMTP_SSL('smtp.gmail.com',465) as smtp:
         smtp.login('banquecosmopolite@gmail.com','chhaganlal123*')
         smtp.send_message(msg)
@@ -77,16 +77,16 @@ def on_publish(client, obj, mid):
 
     
 def publish():
-    global mqttc,entMsg, entHeading, entImg, entPublisher, entAddressee, txtMsg, txtHeading, txtImg,img, txtPublisher, txtAddressee
+    global mqttc,entMsg, entHeading, entImg, entPublisher, entAddressee, entEmail, txtMsg, txtHeading, txtImg,img, txtPublisher, txtAddressee, txtEmail
     topic = 'notice'
     txtHeading = entHeading.get('1.0','end-1c')
     txtMsg = entMsg.get('1.0','end-1c')
     txtImg = entImg.get('1.0','end-1c')
-    print(txtImg)
     img=txtImg
     
     txtPublisher = entPublisher.get('1.0','end-1c')
     txtAddressee = entAddressee.get('1.0','end-1c')
+    txtEmail = entEmail.get('1.0','end-1c')
     Publisher = txtPublisher
     Addressee = txtAddressee
     if(txtImg != ''):
@@ -113,55 +113,76 @@ def publish():
     # Publish a message
     print('publishing')
     mqttc.publish(topic, noticeText)
+    entHeading.delete('1.0', END)
+    entMsg.delete('1.0', END)
+    entImg.delete('1.0', END)
+    entPublisher.delete('1.0', END)
+    entAddressee.delete('1.0', END)
+    entEmail.delete('1.0', END)
     
     
-    
-    
-root=Tk()
-root.title("Project")
-root.geometry("1350x600+0+50")
-newFile =''
-
 def AddImage():
     global root, newFile, entImg
     root.fileName = filedialog.askopenfilename(filetypes = ( [("All files","*.*")]))
     newFile = root.fileName
     entImg.insert(END, newFile)
     
+
+def focus_next_window(event):
+    event.widget.tk_focusNext().focus()
+    return("break")
+    
+root=Tk()
+root.title("Project")
+root.geometry("1300x650+0+0")
+newFile =''
+
+    
 Tops = tk.Frame (root , width=1350 , height=100 , bd=12 , relief="raise" , bg='black')
-Tops.grid(row=0,column=0, columnspan=3)
+Tops.grid(row=0,column=0, columnspan=4)
 lbTitle=Label(Tops , font=('Times New Roman' , 40 , 'bold') ,width=42, text='Notice Board - Fr. CRCE', bg='black' , fg='gold')
 lbTitle.grid(row=0,column=0)
 
 
-lblHeading = Label(root, text='Heading: ', width=10, font=('',25,''))
-lblHeading.grid(row=1,column=0, padx=10, pady=10)
+lblHeading = Label(root, text='Heading: ', width=7, font=('',25,''))
+lblHeading.grid(row=1,column=0, padx=2, pady=10)
 entHeading = Text(root, width=55, height=1, font=('',20,''))
-entHeading.grid(row=1,column=1, padx=10, pady=10, columnspan=2)
+entHeading.grid(row=1,column=1, padx=5, pady=10, columnspan=3)
+entHeading.bind("<Tab>", focus_next_window)
 lblMsg = Label(root, text='Message: ', width=10, font=('',25,''))
-lblMsg.grid(row=2,column=0 ,padx=10, pady=10)
+lblMsg.grid(row=2,column=0 ,padx=2, pady=10)
 entMsg = Text(root , width=75, height=5, font=('',15,''))
-entMsg.grid(row=2,column=1, padx=10, pady=10, columnspan=2)
+entMsg.grid(row=2,column=1, padx=5, pady=10, columnspan=3)
+entMsg.bind("<Tab>", focus_next_window)
 
 lblImg = Label(root, text='Image: ', width=10, font=('',25,''))
-lblImg.grid(row=3,column=0, padx=10, pady=10)
+lblImg.grid(row=3,column=0, padx=2, pady=10)
 entImg = Text(root , width=50, height=1, font=('',15,''))
-entImg.grid(row=3,column=1, padx=10, pady=10)
+entImg.grid(row=3,column=1, padx=5, pady=10)
+entImg.bind("<Tab>", focus_next_window)
 btnImg = Button(root, text='Add Image', command=AddImage, font=(15), bg='black', fg='white')
 btnImg.grid(row=3, column=2)
 
 
 lblPub = Label(root, text='Publisher: ', width=10, font=('',25,''))
-lblPub.grid(row=4,column=0, padx=10, pady=10)
+lblPub.grid(row=4,column=0, padx=2, pady=10)
 entPublisher = Text(root , width=75, height=1, font=('',15,''))
-entPublisher.grid(row=4,column=1, padx=10, pady=10, columnspan=2)
+entPublisher.grid(row=4,column=1, padx=5, pady=10, columnspan=3)
+entPublisher.bind("<Tab>", focus_next_window)
 lblAdd = Label(root, text='Addressee: ', width=10, font=('',25,''))
-lblAdd.grid(row=5,column=0, padx=10, pady=10)
+lblAdd.grid(row=5,column=0, padx=2, pady=10)
 entAddressee = Text(root , width=75, height=1, font=('',15,''))
-entAddressee.grid(row=5,column=1, padx=10, pady=10, columnspan=2)
+entAddressee.grid(row=5,column=1, padx=5, pady=10, columnspan=3)
+entAddressee.bind("<Tab>", focus_next_window)
+
+lblEmail = Label(root, text='Your Email: ', width=10, font=('',25,''))
+lblEmail.grid(row=6,column=0 ,padx=2, pady=10)
+entEmail = Text(root , width=75, height=1, font=('',15,''))
+entEmail.grid(row=6,column=1, padx=5, pady=10, columnspan=3)
+entEmail.bind("<Tab>", focus_next_window)
 
 btnPublish = Button(root, width=10,text='PUBLISH',font=(30), command=publish, bg='green', fg='white')
-btnPublish.grid(row=6, column=0, columnspan=3)
+btnPublish.grid(row=7, column=0, columnspan=4)
 
 btnStart = Button(root, width=1,height=1, command=Thread(target=start_nb).start())
 btnStart.grid(row=6,column=10)
